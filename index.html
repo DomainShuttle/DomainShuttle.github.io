@@ -1,0 +1,1069 @@
+<html lang="en">
+  <head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    <title>DomainShuttle Demo Page</title>
+    <meta name="description" content="DomainShuttle: Toward Generalizable Cross-Domain Subject-driven Video Generation">
+    <meta name="keywords" content="Video generation, Diffusion model">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#EDE8F5">
+    <meta property="og:image" content="">
+    <link rel="stylesheet" href="./assets/index.css">
+    <link rel="shortcut icon" href="./assets/icon.png" type="image/x-icon">
+    <style>
+        @font-face {
+            font-family: 'Roboto';
+            font-style: normal;
+            font-stretch: 100%;
+            font-display: block;
+            font-weight: 300 700;
+            src: url('./assets/roboto.woff2') format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+        }
+
+        @font-face {
+          font-family: 'DancingScript';
+          src: url('./assets/DancingScript-Bold.ttf') format('truetype');
+        }
+
+        @font-face {
+          font-family: 'Caveat';
+          src: url('./assets/Caveat-Medium.ttf') format('truetype');
+        }
+
+        @font-face {
+          font-family: 'Alegreya';
+          src: url('./assets/Alegreya-Regular.ttf') format('truetype');
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        video {
+            background-color: #000000;
+            aspect-ratio: 16 / 9;
+        }
+
+        section.portrait video {
+            background-color: #000000;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+        }
+
+        section.multi_ip video {
+            background-color: #000000;
+            aspect-ratio: 4 / 3;
+            object-fit: cover;
+        }
+
+        section.portrait .prompt-wrap.full-screen-wrap video {
+            object-fit: cover;
+        }
+
+        section.portrait .flex {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            gap: 10px;
+        }
+
+        section.portrait2 .flex {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: flex-start;
+        }
+
+        section.portrait .flex > div {
+            flex: 0 0 calc((100% - 5 * 10px) / 6);
+        }
+        section.portrait2 .flex > div {
+            flex: 0 0 calc((100% - 1 * 10px) / 2);
+        }
+
+        section.portrait .prompt {
+            font-size: 10px;
+        }
+        section.portrait2 .prompt {
+            font-size: 12px;
+        }
+
+        section.portrait .flex-row {
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+        }
+
+        section.portrait2 .flex-row {
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            section.portrait .flex > div {
+                flex: 0 0 calc((100% - 1 * 10px) / 2);
+            }
+        }
+
+        @media (max-width: 768px) {
+            section.portrait2 .flex > div {
+                flex: 0 0 calc((100% - 0 * 10px) / 1);
+            }
+        }
+
+        /* Ensure prompt adjusts for portrait mode */
+        .portrait .prompt {
+            position: absolute;  /* Allow positioning relative to the container */
+            bottom: 5%;          /* Adjust this to control the vertical placement of the prompt */
+            left: 50%;           /* Center horizontally */
+            transform: translateX(-50%); /* Offset by 50% of its width to truly center */
+            max-width: 80%;
+            text-align: center;  /* Center the text inside the prompt */
+            color: white;        /* Optional, if you want the text to stand out */
+            font-size: 1.2em;    /* Optional, adjust the text size */
+        }
+
+        .portrait2 .prompt{
+            position: absolute;  /* Allow positioning relative to the container */
+            bottom: 5%;          /* Adjust this to control the vertical placement of the prompt */
+            left: 50%;           /* Center horizontally */
+            transform: translateX(-50%); /* Offset by 50% of its width to truly center */
+            max-width: 80%;
+            text-align: center;  /* Center the text inside the prompt */
+            color: white;        /* Optional, if you want the text to stand out */
+            font-size: 1.2em;    /* Optional, adjust the text size */
+        }
+
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: "Roboto", sans-serif;
+            padding: 0;
+            margin: 0;
+        }
+
+        #intro {
+            padding: 250px 0 80px 0;
+            justify-content: center;
+            text-align: center;
+            background: transparent;  /*  */
+            color: #ffffff; /*  */
+            position: relative;
+            height: 100vh;  /*  */
+            width: 100%;    /*  */
+        }
+
+        #background-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /*  */
+            z-index: -1; /**/
+            filter: brightness(0.3); /*  */
+        }
+
+        #intro h1 {
+            font-size: 90px;
+            font-weight: 300;
+            margin: 20px 0;
+        } 
+
+        #intro h2 {
+            margin: 20px 0 40px 0;
+            font-weight: 300;
+            color: #ffffff
+        }
+
+        #intro h2 strong {
+            color: #fff;
+        }
+
+        .authors {
+            font-size: 16px;
+            font-weight: 500;
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 25px;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .author-block {
+            display: inline-block;
+            margin: 0 10px 0 10px;
+        }
+
+        .author-block a {
+            color: #ffffff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .author-block a:hover {
+            color: #fff;
+        }
+
+        .author-affiliation {
+            font-size: 16px;
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 60px;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .author-affiliation .author-block {
+            display: inline-block;
+            margin: 0 15px;
+        }
+
+        section {
+            max-width: 1920px;
+            margin: 0 auto;
+        }
+
+        .content {
+            padding: 0 10%;
+        }
+
+        .button {
+            background-color: #ccc;
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: background-color 0.5s;
+            text-decoration: none;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
+        .button:hover {
+            background-color: #fff;
+        }
+
+        .hero-actions {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin: 0 auto 28px auto;
+        }
+
+        .hero-actions .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-width: 190px;
+            margin: 0;
+            padding: 12px 22px;
+            background-color: rgba(255, 255, 255, 0.88);
+            color: #111;
+            font-weight: 500;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+        }
+
+        .hero-actions .button:hover {
+            background-color: #fff;
+        }
+
+        .hero-actions .button svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+            flex: 0 0 auto;
+        }
+
+        .bibtex-section {
+            background-color: #111;
+            padding: 40px 10%;
+            text-align: center;
+            margin-top: 60px;
+            color: #ccc;
+        }
+
+        .bibtex-section h3 {
+            font-size: 24px;
+            font-weight: 400;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+
+        .bibtex-code {
+            background-color: #222;
+            color: #ddd;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: left;
+            display: inline-block;
+            font-family: monospace;
+            max-width: 800px;
+            overflow-x: auto;
+        }
+
+        section {
+            margin-top: 100px;
+        }
+        section:first-of-type {
+            margin-top: 0;
+        }
+
+        .title {
+            background-color: #000;
+            position: sticky;
+            top: 0;
+            padding: 20px 10%;
+            font-size: 20px;
+            font-weight: 600;
+            z-index: 1000;
+            min-height: 60px;
+            box-sizing: border-box;
+        }
+
+        .description {
+            padding: 0 10% 20px 10%;
+            color: #fff;
+            line-height: 25px;
+            font-weight: 300;
+        }
+
+        .hero-video-section .description {
+            width: min(75vw, 1400px);
+            margin: 0 auto 24px auto;
+            padding: 0;
+            text-align: center;
+            line-height: 1.8;
+            font-size: 1.08em;
+            color: rgba(255, 255, 255, 0.92);
+        }
+
+        .hero-video-section .flex {
+            justify-content: center;
+            padding: 0 0 24px 0;
+        }
+
+        .hero-video-section .flex-dynamic > div {
+            width: min(75vw, 1400px);
+            margin: 0 auto;
+        }
+
+        .highlight {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .flex-row {
+            display: flex;
+            column-gap: 5px;
+            flex-wrap: nowrap;
+            justify-content: space-between;
+            padding: 0 5px 5px 5px;
+            
+        }
+
+        .flex-row > div {
+            flex-grow: 1;
+            flex-basis: 0;
+            position: relative;
+        }
+
+        .flex > div {
+            width: calc(100% / 3 - 5px * 2 / 3);
+            margin-top: 2.5px;
+            margin-bottom: 2.5px;
+            position: relative;
+        }
+        /* Part 1 单列布局 */
+        #video_group_1 .single-column > div {
+            width: 85% !important;
+            margin: 0 auto 60px auto;
+        }
+
+        /* Part 3 单列布局 */
+        #video_group_3 .single-column > div {
+            width: 85% !important;
+            margin: 0 auto 60px auto;
+        }
+        
+
+        .flex {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            padding: 0 5px;
+        }
+
+        .prompt-wrap {
+            position: relative;
+        }
+
+        .flex-2 {
+            justify-content: center;
+            column-gap: 5px;
+        }
+        .flex-2 > div {
+            width: calc(100% / 2 - 5px / 2);
+            min-width: calc(100% / 3 - 5px * 2 / 3);
+            max-width: calc(100vh - 200px);
+        }
+
+        video, img {
+            width: 100%;
+        }
+
+        .loading-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: rgba(255, 255, 255, 0.6);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .loading-text {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .loading-icon {
+            font-size: 48px;
+        }
+
+        .prompt {
+            max-width: calc(100% - 20px);
+            position: absolute;
+            background: rgba(0,0,0,0.5);
+            color: rgba(255,255,255,0.9);
+            font-size: 10px;
+            backdrop-filter: blur(10px);
+            bottom: 10px;
+            left: 10px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+            box-sizing: border-box;
+        }
+
+        .flex-very-compact .full-screen-button {
+            width: 100%;
+            height: 100%;
+            top: 0;
+            right: 0;
+            border-radius: 0;
+        }
+
+        .chinese {
+            font-family: 'Noto Sans SC', sans-serif;
+            font-weight: bold;
+            color: #d18585;
+            font-size: 1.1em;
+        }
+
+        @media (hover: hover) {
+            .prompt-wrap:hover .prompt,
+            .full-screen-wrap:hover .full-screen-button {
+                opacity: 1;
+                pointer-events: all;
+            }
+            #contributors a:hover {
+                background-color: #222;
+            }
+        }
+
+        @media (hover: none) {
+            #contributors a {
+                pointer-events: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .flex-dynamic > div {
+                width: calc(100% / 2 - 5px / 2);
+            }
+        }
+
+        @media (max-width: 640px) {
+            #intro h1 {
+                font-size: 50px;
+            }
+            #intro h2 {
+                font-size: 20px;
+            }
+            .ruler {
+                font-size: 10px;
+            }
+        }
+
+        @media (max-width: 512px) {
+            .flex-dynamic > div,
+            .flex-dynamic-1 > div {
+                width: 100%;
+            }
+
+            .content {
+                padding: 0 12px;
+            }
+
+            .description {
+                padding: 0 12px 20px 12px;
+            }
+
+            .title {
+                padding: 20px 12px;
+            }
+
+            .ruler-tight {
+                font-size: 6px;
+                column-gap: 0;
+            }
+
+            .title-long {
+                font-size: 16px;
+            }
+
+        }
+
+        .margin-top {
+            margin-top: 50px;
+        }
+
+        .ruler {
+            text-align: center;
+            position: sticky;
+            top: 60px;
+            z-index: 999;
+            background-color: #000;
+            color: #999;
+            padding: 5px 0;
+        }
+
+        .ruler > div {
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .selected {
+            box-shadow: 0 0 0 5px #fff;
+        }
+
+        #title-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        #title-icon {
+          height: 8em;
+          width: auto;
+          margin-right: 0px;
+          vertical-align: middle;
+        }
+
+        .title-art {
+          font-family: 'Alegreya', sans-serif;
+        }
+
+        .title-art2 {
+          font-family: 'Alegreya', sans-serif;
+        }
+
+        .title-art3 {
+          font-family: 'Alegreya', sans-serif;
+        }
+
+        h2 {
+            font-size: 2.5em;
+            color: rgb(255, 255, 255);
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        #video-wrapper {
+          border-radius: 50px;
+          max-width: 720px;
+          padding-bottom: 40%; 
+          margin: 0 auto;
+          background: #000000;
+        }
+
+        .ethics-section {
+            padding: 100px 10%;
+            text-align: center;
+            margin-top: 60px;
+            color: #ccc;
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+        .acknowledgements-section {
+            padding: 100px 10%;
+            text-align: center;
+            margin-top: 60px;
+            color: #ccc;
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+    </style>
+</head>
+<body>
+    <section id="intro">
+        <!--teaser video here -->
+        <video autoplay muted loop id="background-video">
+            <source src="assets/domainshuttle_video/page_video/background_generation.mov" type="video/mp4">
+        </video>
+        <div class="content">
+            <div id="title-container">
+              <!-- <img id="title-icon" src="./assets/icon-new.png" alt="Icon"> -->
+              <h1 class="title-art"><strong>DomainShuttle</strong></h1>
+            </div>
+            <h2 class="title-art2">Toward Generalizable Cross-Domain Subject-driven Video Generation</h2>
+            
+
+            <!-- Added the affiliations section -->
+            <div class="author-affiliation">
+                <p><span> </span></p>
+            </div>
+            
+        </div>
+
+    </section>
+
+
+
+        <!-- <section id="video" class="hero-video-section">
+      <div class="title" style="text-align: center;font-family: 'Alegreya'; font-size: 1.6em;">
+        Creative Usage 
+      </div>
+
+      <div class="description">
+        <strong>DomainShuttle</strong> brings the same subject to life across a wide range of realistic and imaginative worlds, producing cinematic, identity-consistent videos with rich motion and visual detail.
+      </div>
+      <div class="flex flex-dynamic">
+
+          <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+              <div class="loading-placeholder">
+                  <div class="loading-text">Loading...</div>
+                  <div class="loading-icon">&#9749</div>
+              </div>
+              <video controls playsinline preload="metadata" onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/page_video/lead_video.mp4"></video>          </div>
+
+      </div>
+  </section> -->
+
+
+
+
+
+        <section id="video">
+      <div class="title" style="text-align: center;font-family: 'Alegreya'; font-size: 1.6em;">
+        Part 1: Cross-Domain Video Personalization 
+      </div>
+
+      <div class="description">
+        Part 1 presents additional examples of cross-domain video personalization. <strong>DomainShuttle</strong> successfully enables the mapping of real-world subjects to fantasy domains, fantasy subjects to real-world domains, and interactions between fantasy and real-world subjects.
+      </div>
+
+      <div class="flex flex-dynamic">
+
+          <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+              <div class="loading-placeholder">
+                  <div class="loading-text">Loading...</div>
+                  <div class="loading-icon">&#9749</div>
+              </div>
+              <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Cross_Domain/real2fantasy2.mp4"></video>
+              <div class="prompt">A man and a woman, depicted in a children's book illustration style, walk together through a sunlit meadow with tall, fluffy flowers and a distant rainbow. Smooth, gentle animation with a warm, storybook texture. Playful, colorful, whimsical hand-drawn style with soft outlines. </div>
+          </div>
+          <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+            <div class="loading-placeholder">
+                <div class="loading-text">Loading...</div>
+                <div class="loading-icon">&#9749</div>
+            </div>
+            <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Cross_Domain/real-fantasy4.mp4"></video>
+            <div class="prompt">A beautiful woman stands in a classroom, holding a smartphone and carefully adjusting its angle to take a photo of a sketch on the blackboard. The sketch depicts a character with a red hat and a red shirt. Sunlight streams through a nearby window, casting soft shadows on the woman and the chalkboard.</div>
+          </div>
+          <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+              <div class="loading-placeholder">
+                  <div class="loading-text">Loading...</div>
+                  <div class="loading-icon">&#9749</div>
+              </div>
+              <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Cross_Domain/fantasy2real1.mp4"></video>
+              <div class="prompt">A woman with long dark hair, wearing a white yukata with a pattern of blue and pink starfish and seaweed, a green obi, and blue geta sandals, gently licks a red lollipop while walking slowly along a traditional Japanese festival street lined with paper lanterns, holding a small woven bamboo basket in her free hand.</div>
+          </div>
+        <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+              <div class="loading-placeholder">
+                  <div class="loading-text">Loading...</div>
+                  <div class="loading-icon">&#9749</div>
+              </div>
+              <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Cross_Domain/real2fantasy4.mp4"></video>
+              <div class="prompt"> A classic anime-style man with a full beard is showing a yellow hair dryer,  while a classic anime-style woman holds a cloth doll with a warm smile, set in a cozy Ghibli-style room with soft sunlight filtering through paper windows and potted plants. Smooth animation, warm color palette, and detailed textures.  Soft, warm lighting, hand-painted textures, detailed watercolor backgrounds. </div>
+          </div>
+        <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+              <div class="loading-placeholder">
+                  <div class="loading-text">Loading...</div>
+                  <div class="loading-icon">&#9749</div>
+              </div>
+              <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Cross_Domain/real-fantasy2.mp4"></video>
+              <div class="prompt"> A man with a beard and glasses stands in front of a wall, gazing intently at a 2D anime-style graffiti of a girl. The background features a cozy, sunlit alleyway with soft shadows and warm tones. The video has a smooth texture with gentle color grading, capturing the man's quiet admiration as he slightly tilts his head while observing the artwork. </div>
+          </div>
+            <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+              <div class="loading-placeholder">
+                  <div class="loading-text">Loading...</div>
+                  <div class="loading-icon">&#9749</div>
+              </div>
+              <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Cross_Domain/fantasy2real4.mp4"></video>
+              <div class="prompt">A woman joyfully carrying a tote bag printed with the gray fantasy character in a sunlit park with blooming cherry blossoms.  </div>
+          </div>
+          <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+              <div class="loading-placeholder">
+                  <div class="loading-text">Loading...</div>
+                  <div class="loading-icon">&#9749</div>
+              </div>
+              <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Cross_Domain/real2fantasy3.mp4"></video>
+              <div class="prompt"> A 3D anime-style man and 3D anime-style woman, walking side by side through a colorful, whimsical park with fluffy cloud-shaped bushes and rainbow pathways, chatting happily. Video with smooth, playful animation and vibrant, candy-colored textures. Characters with big eyes and cute facial expressions. </div>
+          </div>
+          <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+            <div class="loading-placeholder">
+                <div class="loading-text">Loading...</div>
+                <div class="loading-icon">&#9749</div>
+            </div>
+            <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Cross_Domain/real-fantasy1.mp4"></video>
+            <div class="prompt">In a modern photography studio with soft lighting, a man stands next to a life-sized holographic figure with long blue hair, blue horns, and a blue mark on the forehead. Both are looking at a glowing roadmap floating between them; the man occasionally points at different locations on the map while the holographic figure slightly tilts its head, appearing to discuss the route details.</div>
+          </div>
+          <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+            <div class="loading-placeholder">
+                <div class="loading-text">Loading...</div>
+                <div class="loading-icon">&#9749</div>
+            </div>
+            <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Cross_Domain/fantasy2real2.mp4"></video>
+            <div class="prompt">A  woman gently holds up a small cloth doll with a red and gold vest and black pants with flame patterns. She sits on a sunlit windowsill, smiling softly, as the warm, natural light of the real world illuminates both her and the vibrantly colored doll, creating a tender contrast between the realistic setting and the enchanted character she holds. This is a real-life scene with lifelike, highly detailed, and photorealistic textures and lighting. </div>
+          </div>
+           <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+            <div class="loading-placeholder">
+                <div class="loading-text">Loading...</div>
+                <div class="loading-icon">&#9749</div>
+            </div>
+            <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Cross_Domain/real2fantasy1.mp4"></video>
+            <div class="prompt">  Two Line style individuals: one female with hair in a bun, one male with styled hair and facial hair. They walk side by side through a simple line-drawn urban street with basic geometric buildings and street lamps. Smooth, continuous line animation with consistent line weight throughout. Clean, minimal black line art with white negative space. </div>
+          </div>
+           <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+            <div class="loading-placeholder">
+                <div class="loading-text">Loading...</div>
+                <div class="loading-icon">&#9749</div>
+            </div>
+            <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Cross_Domain/real-fantasy3.mp4"></video>
+            <div class="prompt">A man gazes intently at a photographic work depicting a woman surrounded by luminous light strips. He stands still in a dimly lit, modern art gallery with sleek white walls and spotlights highlighting the artwork, cinematic lighting, and smooth video texture.</div>
+          </div>
+           <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+            <div class="loading-placeholder">
+                <div class="loading-text">Loading...</div>
+                <div class="loading-icon">&#9749</div>
+            </div>
+            <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Cross_Domain/fantasy2real3.mp4"></video>
+            <div class="prompt">A man with gray hair and a beard wears the fantasy character pin, happily waving his hand. Vibrant colors, smooth animation, cheerful atmosphere.</div>
+          </div>
+      </div>
+  </section>
+
+     <section id="video_group_2">
+      <div class="title" style="text-align: center;font-family: 'Alegreya'; font-size: 1.6em;">
+        Part 2: In-Domain Video Personalization 
+      </div>
+
+      <div class="description">
+        Part 2 presents additional examples of in-domain video personalization. <strong>DomainShuttle</strong> performs well across various in-domain scenarios, including human-object interaction, multi-object generation, and multi-person generation.
+      </div>
+
+      <div class="flex flex-dynamic">
+
+          <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+              <div class="loading-placeholder">
+                  <div class="loading-text">Loading...</div>
+                  <div class="loading-icon">&#9749</div>
+              </div>
+              <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/In_Domain/human_object_0.mp4"></video>
+              <div class="prompt">A man is facing the camera and introducing a yellow hair dryer. He holds the product with a gentle smile, presenting it to the viewer. The background features a bathroom with a wooden vanity, concrete sink and hanging plants, natural and rustic.</div>
+          </div>
+    <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+              <div class="loading-placeholder">
+                  <div class="loading-text">Loading...</div>
+                  <div class="loading-icon">&#9749</div>
+              </div>
+              <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/In_Domain/multi_object_0.mp4"></video>
+              <div class="prompt">In a cozy, minimalist living room dominated by white, a lively dog rests comfortably on a crisp white sofa topped with a red cushion. A pile of magazines or books is neatly stacked to the left of the sofa, creating a relaxing and organized atmosphere. The Pomeranian appears cheerful and content, occasionally stirring but mostly maintaining a stable and happy posture. The bright and tidy environment highlights the dog's lively personality and creates a peaceful and warm atmosphere.</div>
+          </div>
+    <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+              <div class="loading-placeholder">
+                  <div class="loading-text">Loading...</div>
+                  <div class="loading-icon">&#9749</div>
+              </div>
+              <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/In_Domain/multi_human_0.mp4"></video>
+              <div class="prompt">Two individuals standing in a field of tall grass. The setting is a rural area with a clear sky and a few scattered trees in the background. The person on the left, wearing a white shirt, is holding a smartphone and appears to be taking a selfie. The person on the right, dressed in a sleeveless top, is leaning against the other person, suggesting a close relationship. The lighting indicates it is either early morning or late afternoon, creating a warm and calm atmosphere.  The two individuals continue to pose for the selfie, maintaining their positions and expressions. The tall grass sways gently in the breeze, adding to the peaceful ambiance. The background remains consistent, with the trees and clear sky providing a picturesque backdrop. The overall mood of the video is one of calmness and connection, as the two individuals enjoy their time together in the beautiful outdoor setting.</div>
+          </div>
+            <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+              <div class="loading-placeholder">
+                  <div class="loading-text">Loading...</div>
+                  <div class="loading-icon">&#9749</div>
+              </div>
+              <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/In_Domain/human_object_1.mp4"></video>
+              <div class="prompt">A woman is facing the camera and introducing a product of decorative doll figurine. She smiles warmly, holding the product gently as she presents it. The background features a living room with floor lamps, potted ferns, creating a warm tranquil atmosphere.</div>
+          </div>
+        <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+              <div class="loading-placeholder">
+                  <div class="loading-text">Loading...</div>
+                  <div class="loading-icon">&#9749</div>
+              </div>
+              <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/In_Domain/multi_object_1.mp4"></video>
+              <div class="prompt">A darling white bunny, cozy on a blanket adorned with autumn leaves, nibbles on a bright yellow leaf, showcasing a playful curiosity in the crisp fall air. Surrounding the bunny is a picturesque scene featuring a vibrant yellow chair and a delicate bouquet of pink flowers, basking in the glow of the tranquil waters nearby. The background reveals a colorful tapestry of trees transitioning to rich autumn hues, truly capturing the essence of the season. Scattered fruits lie beside the bunny, enhancing the idyllic, serene ambiance of this enchanting scene and highlighting the beauty of nature's bounty</div>
+          </div>
+        <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+              <div class="loading-placeholder">
+                  <div class="loading-text">Loading...</div>
+                  <div class="loading-icon">&#9749</div>
+              </div>
+              <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/In_Domain/multi_human_1.mp4"></video>
+              <div class="prompt">The video depicts an elderly couple sitting on a light gray sofa in a well-lit living room. The man, dressed in a light blue shirt and brown pants, is holding a laptop on his lap, while the woman, wearing a checkered blouse and beige shorts, leans in closely, resting her arm on his shoulder. Both individuals appear engaged with the laptop screen, occasionally gesturing towards it with their hands. As the video progresses, the couple's expressions change from focused to surprised and then to joyful. The man raises his hand in a gesture of excitement, while the woman laughs heartily, her head tilted back slightly. Their body language suggests a shared moment of amusement or discovery. The background reveals a modern living room with a bookshelf filled with books and decorative items, a small table with a lamp, and a window letting in natural light. The overall atmosphere is cozy and domestic, emphasizing a relaxed and intimate setting. There is no noticeable camera movement; the shot remains static throughout the sequence, capturing the couple's interaction with the laptop and their reactions.</div>
+          </div>
+            <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+              <div class="loading-placeholder">
+                  <div class="loading-text">Loading...</div>
+                  <div class="loading-icon">&#9749</div>
+              </div>
+              <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/In_Domain/human_object_2.mp4"></video>
+              <div class="prompt">A man is facing the camera and introducing a athletic shoe. He holds the product in his hand, looking directly at the camera. The background features a slim bookshelf, woven basket and potted fern, creating a clean and tranquil atmosphere.</div>
+          </div>
+            <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+              <div class="loading-placeholder">
+                  <div class="loading-text">Loading...</div>
+                  <div class="loading-icon">&#9749</div>
+              </div>
+              <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/In_Domain/multi_object_2.mp4"></video>
+              <div class="prompt">In this vibrant image, several flamingos, recognizable by their striking pink feathers, stand on the surface of shallow water, feeding. The flamingos dip their heads into colorful food bowls, particularly the red and purple ones, filled with food. They are surrounded by numerous black and gray crows, some perched on the bowls next to the flamingos, others pecking at the food themselves. The crows are very active, flapping their wings and hopping across the water, which is shown trapped by a wire fence in the background. The reflections of the flamingos and crows on the water's surface add to the lively atmosphere created by the light and shadows on the water.</div>
+          </div>
+            <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+              <div class="loading-placeholder">
+                  <div class="loading-text">Loading...</div>
+                  <div class="loading-icon">&#9749</div>
+              </div>
+              <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/In_Domain/multi_human_2.mp4"></video>
+              <div class="prompt">The video depicts a scene set outdoors on a sunny day, likely during breakfast or brunch. A couple is seated at a table covered with a patterned tablecloth, enjoying a casual moment together. The woman, dressed in a light gray tank top, is pouring coffee from a French press into two white cups placed on saucers. Her hair is long and dark, and she has red nail polish. The man, wearing a green t-shirt, is smiling and appears engaged in conversation with her. He gestures with his hands while speaking, and at one point, he reaches across the table to take a small piece of bread from a basket. The table also holds a small pitcher of milk and a sugar bowl, suggesting they are preparing to add cream and sugar to their coffee. The background features lush greenery and blooming pink flowers, indicating a tropical or subtropical setting. The architecture includes white columns and arches, adding to the serene ambiance. Throughout the video, the camera remains static, capturing the couple's interaction and the tranquil outdoor environment. The focus stays on the couple and their actions, with no significant camera movements or changes in perspective. The overall mood is relaxed and intimate, highlighting the simple pleasure of sharing a meal in a beautiful setting.</div>
+          </div>
+
+      </div>
+  </section>
+
+
+      <section id="video_group_1">
+        <div class="title" style="text-align: center;font-family: 'Alegreya'; font-size: 1.6em;">
+          PART 3: Qualitative Comparison for bidirectional video generation
+        </div>
+        <div class="description", style="font-size: 1.0em;">
+            Part 3 mainly presents qualitative comparisons between <strong>DomainShuttle</strong>  and existing methods. <strong>DomainShuttle</strong> outperforms existing methods in open-domain scenarios, achieving flexible text controllability and subject consistency.
+        </div>
+        
+       <div class="flex flex-dynamic single-column">
+            <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+                <div class="loading-placeholder">
+                    <div class="loading-text">Loading...</div>
+                    <div class="loading-icon">&#9749</div>
+                </div>
+                <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Qualitative_comparison/video_0.mov"></video>
+                <div class="prompt">Two watercolor-painted people in a watercolor-painted garden engage in a gentle conversation. Soft, dreamy watercolor aesthetic with blended colors.</div>
+            </div>
+
+            
+            <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+                <div class="loading-placeholder">
+                    <div class="loading-text">Loading...</div>
+                    <div class="loading-icon">&#9749</div>
+                </div>
+                <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Qualitative_comparison/video_2.mov"></video>
+                <div class="prompt">A  3D-stylized man and a 3D-stylized woman walk side by side through a sunlit park with 3D stylized trees and clouds. Vibrant colors and 3D polished animated movie rendering.</div>
+            </div>
+
+            <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+                <div class="loading-placeholder">
+                    <div class="loading-text">Loading...</div>
+                    <div class="loading-icon">&#9749</div>
+                </div>
+                <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Qualitative_comparison/video_1.mov"></video>
+                <div class="prompt">Two papercut-style people standing side by side in a conversation with head turns and gestures in a minimalist papercut background of stylized trees and clouds. </div>
+            </div>
+            
+            <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+                <div class="loading-placeholder">
+                    <div class="loading-text">Loading...</div>
+                    <div class="loading-icon">&#9749</div>
+                </div>
+                <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Qualitative_comparison/video_4.mov"></video>
+                <div class="prompt">Two charcoal-sketch individuals are standing in a minimalist charcoal-drawn interior with soft light in a quiet conversation. Charcoal sketch with bold strokes and high contrast.</div>
+            </div>
+            
+            <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+                <div class="loading-placeholder">
+                    <div class="loading-text">Loading...</div>
+                    <div class="loading-icon">&#9749</div>
+                </div>
+                <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Qualitative_comparison/video_3.mov"></video>
+                <div class="prompt">Two low-poly 3D men standing in a low-poly outdoor environment with angular trees and simplified landscape, engaged in a conversation.</div>
+            </div>
+
+            <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+                <div class="loading-placeholder">
+                    <div class="loading-text">Loading...</div>
+                    <div class="loading-icon">&#9749</div>
+                </div>
+                <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Qualitative_comparison/video_5.mov"></video>
+                <div class="prompt">A man sits on a couch in a living room, eyes fixed on the TV. On the TV, a blue robotic character is interacting with a character who has long blue hair.</div>
+            </div>
+            <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+                <div class="loading-placeholder">
+                    <div class="loading-text">Loading...</div>
+                    <div class="loading-icon">&#9749</div>
+                </div>
+                <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Qualitative_comparison/video_6.mov"></video>
+                <div class="prompt">A woman shows a hot-drink paper cup printed with the endearing character gently in her hands.  A real-life scene, highly detailed, and photorealistic textures.</div>
+            </div>
+
+            <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+                <div class="loading-placeholder">
+                    <div class="loading-text">Loading...</div>
+                    <div class="loading-icon">&#9749</div>
+                </div>
+                <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Qualitative_comparison/video_9.mov"></video>
+                <div class="prompt">A man pauses on the street, turning his head to look to his right as a real-world yellow bus painted with the yellow animated character drives from the right side towards the left.</div>
+            </div>
+
+            <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+                <div class="loading-placeholder">
+                    <div class="loading-text">Loading...</div>
+                    <div class="loading-icon">&#9749</div>
+                </div>
+                <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Qualitative_comparison/video_7.mov"></video>
+                <div class="prompt">A woman in a white gallery, holding a guide device to her ear and listening, stands beside a watercolor-style painting of the fantasy character.</div>
+            </div>
+
+            <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+                <div class="loading-placeholder">
+                    <div class="loading-text">Loading...</div>
+                    <div class="loading-icon">&#9749</div>
+                </div>
+                <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Qualitative_comparison/video_8.mov"></video>
+                <div class="prompt">A man holds a small, cute figurine featuring white fluffy hair and black cat ears. He rotates the figurine in his hands and shows it in a clean white background.</div>
+            </div>
+        </div>
+    </section>
+
+
+
+
+      <section id="video_group_3">
+        <div class="title" style="text-align: center;font-family: 'Alegreya'; font-size: 1.6em;">
+          PART 4: Qualitative Comparison for streaming autoregressive video generation
+        </div>
+        <div class="description", style="font-size: 1.0em;">
+            Part 4 mainly presents qualitative comparisons between <strong>DomainShuttle</strong>  and existing methods under the streaming autoregressive generation setting. <strong>DomainShuttle</strong> outperforms existing methods in open-domain scenarios, achieving flexible text controllability and subject consistency.
+        </div>
+        
+       <div class="flex flex-dynamic single-column">
+            <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+                <div class="loading-placeholder">
+                    <div class="loading-text">Loading...</div>
+                    <div class="loading-icon">&#9749</div>
+                </div>
+                <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Streaming_Video/long_video_1.mov"></video>
+                <div class="prompt">Background Prompt: Rich brushstrokes, vibrant color blending, textured oil painting aesthetic. In a sunlit garden with blooming roses and soft green foliage, a classical oil painting background with blurred, impressionistic trees, smooth video transition mimicking traditional canvas texture.
+
+<br>0~5s:  Two oil painting  individuals engage in quiet conversation face to face.
+<br>5~10s: Two oil painting  individuals are shaking hands.
+<br>10~15s: Two oil painting  individuals turn their heads to face forward and smile.
+<br>15~20s: Two oil painting  individuals are walking forward together.
+<br>20~30s: Two oil painting  individuals turn to face each other again, and engage in conversation.</div>
+            </div>
+
+            
+            <div class="prompt-wrap full-screen-wrap" style="position: relative;">
+                <div class="loading-placeholder">
+                    <div class="loading-text">Loading...</div>
+                    <div class="loading-icon">&#9749</div>
+                </div>
+                <video autoplay playsinline muted loop onloadeddata="this.style.display='block'; this.previousElementSibling.style.display='none';" src="./assets/domainshuttle_video/Streaming_Video/long_video_2.mov"></video>
+                <div class="prompt">A asian woman gently introduces a T-shirt printed with a blue, spiked-haired, green-skinned scientist character with a lab coat. The woman is standing in a cozy bedroom with pastel walls and a desk cluttered with science books, with soft morning light filtering through curtains.</div>
+            </div>
+
+
+        </div>
+    </section>
+
+
+
+
+
+
+    <script>
+        $(document).ready(function () {
+            // Clone the items to show neighbors in the carousel
+            $('.carousel-item', '.show-neighbors').each(function () {
+                var next = $(this).next();
+                if (!next.length) {
+                    next = $(this).siblings(':first');
+                }
+                next.children(':first-child').clone().appendTo($(this));
+            }).each(function () {
+                var prev = $(this).prev();
+                if (!prev.length) {
+                    prev = $(this).siblings(':last');
+                }
+                prev.children(':nth-last-child(2)').clone().prependTo($(this));
+            });
+
+            function playActiveVideo() {
+                // Stop all videos
+                $('.carousel-video').each(function () {
+                    this.pause();
+                });
+                
+                // Find the active carousel item (the middle one) and play its video
+                var activeVideo = $('#carouselExampleCaptions .carousel-item.active .video-wrapper video.carousel-video').get(0);
+
+                // Play the video only if it exists
+                if (activeVideo) {
+                    activeVideo.play();
+                }
+            }
+
+            // On slide event, pause all videos
+            $('#carouselExampleCaptions').on('slide.bs.carousel', function () {
+                $('.carousel-video').each(function () {
+                    this.pause();
+                });
+            });
+
+            // On slid event, play the active video
+            $('#carouselExampleCaptions').on('slid.bs.carousel', function () {
+                playActiveVideo();
+            });
+
+            // Play the active video on page load
+            playActiveVideo();
+        });
+    </script>
+
+</body>
+
+
+</html>
